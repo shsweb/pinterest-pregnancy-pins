@@ -1,44 +1,24 @@
-name: Build Pinterest bulk CSV
+name: Generate ten pregnancy Pinterest pins and CSV
 on:
   push:
     paths:
-      - 'images/pregnancy-quiz/**'
+      - 'generate_pins.py'
+      - '.github/workflows/publish-pregnancy-pins.yml'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  build-csv:
+  build-pins:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify hosted PNGs and write ready CSV
+      - name: Install Pillow
+        run: python3 -m pip install pillow
+      - name: Generate PNG pins and final Pinterest CSV
+        run: python3 generate_pins.py
+      - name: Commit images and completed CSV
         run: |
-          python3 - <<'PY'
-          import csv,glob
-          images=sorted(glob.glob('images/pregnancy-quiz/*.png'))
-          assert len(images)==10,f'Expected 10 PNGs uploaded to images/pregnancy-quiz; found {len(images)}'
-          titles=[
-            'Am I Pregnant? Early Signs & What to Do Next',
-            'Late Period? Reasons and First Steps',
-            'When to Take a Pregnancy Test for a Reliable Result',
-            'Early Pregnancy Symptoms: What You Might Notice',
-            'PMS vs Pregnancy: Why Symptoms Can Feel Similar',
-            'Missed Period: A Simple Checklist for Next Steps',
-            'Is It PMS or Pregnancy? Symptoms That Overlap',
-            'Am I Pregnant Quiz: Explore Symptoms and Next Steps',
-            'Waiting to Take a Pregnancy Test? What to Know',
-            'Could You Be Pregnant? Explore Early Signs With the Quiz',
-          ]
-          destination='https://apps.apple.com/us/app/am-i-pregnant-pregnancy-quiz/id6769078846'
-          with open('pinterest_bulk_ready.csv','w',newline='',encoding='utf-8-sig') as f:
-            w=csv.writer(f)
-            w.writerow(['Title','Media URL','Pinterest board','Thumbnail','Description','Link','Publish date','Keywords'])
-            for title,path in zip(titles,images):
-              w.writerow([title,'https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/'+path,'Pregnancy Tips & Early Signs','',title+'. Explore possible early signs, practical next steps and the Am I Pregnant? Pregnancy Quiz. Only a pregnancy test can confirm pregnancy. #AmIPregnant #PregnancyQuiz',destination,'','pregnancy quiz, early pregnancy signs, pregnancy symptoms'])
-          PY
-      - name: Commit CSV
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add pinterest_bulk_ready.csv
-          git diff --cached --quiet || (git commit -m 'Build Pinterest bulk CSV with public hosted images' && git push)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/pregnancy-quiz pinterest_bulk_ready.csv
+          git diff --cached --quiet || (git commit -m "Publish 10 pregnancy pins and ready-to-upload CSV" && git push)
