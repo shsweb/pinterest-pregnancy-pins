@@ -67,7 +67,10 @@ def drawcenter(d,txt,y,font,fill,stroke_width=0,stroke_fill=None):
 rows=[]
 for i,(slug,top,main,sub,board) in enumerate(DATA,1):
     url=BASE+slug
-    im=cover(getimage(url) or fallback(i))
+    source_image=getimage(url)
+    if source_image is None:
+        source_image=fallback(i)
+    im=cover(source_image)
     im=ImageEnhance.Color(im).enhance(1.22)
     # dark photo at bottom for easy legibility, bright header at top
     dark=Image.new('RGBA',(1000,1500),(0,0,0,0))
