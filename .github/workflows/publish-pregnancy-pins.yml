@@ -1,46 +1,44 @@
-name: Publish pregnancy Pinterest pins
+name: Build Pinterest bulk CSV
 on:
   push:
     paths:
-      - '.github/workflows/publish-pregnancy-pins.yml'
+      - 'images/pregnancy-quiz/**'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  publish:
+  build-csv:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download prepared pin image bundle
-        env:
-          BUNDLE_URL: https://at.adobe.com/sksSEe75s0DOAG7H
-        run: |
-          curl --fail --location --retry 3 "$BUNDLE_URL" --output /tmp/pinterest_pins.zip
-          unzip -t /tmp/pinterest_pins.zip
-          unzip -o /tmp/pinterest_pins.zip 'pregnancy_pinterest_pins/*' 'pinterest_bulk_10_pregnancy_pins.csv' -d /tmp/pinbundle
-          mkdir -p images/pregnancy-quiz
-          cp /tmp/pinbundle/pregnancy_pinterest_pins/*.png images/pregnancy-quiz/
-      - name: Set permanent GitHub public image URLs in Pinterest CSV
+      - name: Verify hosted PNGs and write ready CSV
         run: |
           python3 - <<'PY'
-          import csv, glob, os
-          source='/tmp/pinbundle/pinterest_bulk_10_pregnancy_pins.csv'
-          with open(source,encoding='utf-8-sig',newline='') as f:
-              rows=list(csv.DictReader(f))
-          titles=list(sorted(glob.glob('images/pregnancy-quiz/*.png')))
-          assert len(rows)==10 and len(titles)==10,(len(rows),len(titles))
-          for row,path in zip(rows,titles):
-              row['Media URL']='https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/'+path
-              assert row['Link']=='https://apps.apple.com/us/app/am-i-pregnant-pregnancy-quiz/id6769078846'
+          import csv,glob
+          images=sorted(glob.glob('images/pregnancy-quiz/*.png'))
+          assert len(images)==10,f'Expected 10 PNGs uploaded to images/pregnancy-quiz; found {len(images)}'
+          titles=[
+            'Am I Pregnant? Early Signs & What to Do Next',
+            'Late Period? Reasons and First Steps',
+            'When to Take a Pregnancy Test for a Reliable Result',
+            'Early Pregnancy Symptoms: What You Might Notice',
+            'PMS vs Pregnancy: Why Symptoms Can Feel Similar',
+            'Missed Period: A Simple Checklist for Next Steps',
+            'Is It PMS or Pregnancy? Symptoms That Overlap',
+            'Am I Pregnant Quiz: Explore Symptoms and Next Steps',
+            'Waiting to Take a Pregnancy Test? What to Know',
+            'Could You Be Pregnant? Explore Early Signs With the Quiz',
+          ]
+          destination='https://apps.apple.com/us/app/am-i-pregnant-pregnancy-quiz/id6769078846'
           with open('pinterest_bulk_ready.csv','w',newline='',encoding='utf-8-sig') as f:
-              writer=csv.DictWriter(f,fieldnames=list(rows[0]))
-              writer.writeheader()
-              writer.writerows(rows)
-          print('Published',len(rows),'pin rows and images')
+            w=csv.writer(f)
+            w.writerow(['Title','Media URL','Pinterest board','Thumbnail','Description','Link','Publish date','Keywords'])
+            for title,path in zip(titles,images):
+              w.writerow([title,'https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/'+path,'Pregnancy Tips & Early Signs','',title+'. Explore possible early signs, practical next steps and the Am I Pregnant? Pregnancy Quiz. Only a pregnancy test can confirm pregnancy. #AmIPregnant #PregnancyQuiz',destination,'','pregnancy quiz, early pregnancy signs, pregnancy symptoms'])
           PY
-      - name: Commit published pins
+      - name: Commit CSV
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add images/pregnancy-quiz pinterest_bulk_ready.csv
-          git diff --cached --quiet || (git commit -m "Publish 10 pregnancy Pinterest pins and import CSV" && git push)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pinterest_bulk_ready.csv
+          git diff --cached --quiet || (git commit -m 'Build Pinterest bulk CSV with public hosted images' && git push)
