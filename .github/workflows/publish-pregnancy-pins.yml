@@ -1,0 +1,46 @@
+name: Publish pregnancy Pinterest pins
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-pregnancy-pins.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download prepared pin image bundle
+        env:
+          BUNDLE_URL: https://at.adobe.com/sksSEe75s0DOAG7H
+        run: |
+          curl --fail --location --retry 3 "$BUNDLE_URL" --output /tmp/pinterest_pins.zip
+          unzip -t /tmp/pinterest_pins.zip
+          unzip -o /tmp/pinterest_pins.zip 'pregnancy_pinterest_pins/*' 'pinterest_bulk_10_pregnancy_pins.csv' -d /tmp/pinbundle
+          mkdir -p images/pregnancy-quiz
+          cp /tmp/pinbundle/pregnancy_pinterest_pins/*.png images/pregnancy-quiz/
+      - name: Set permanent GitHub public image URLs in Pinterest CSV
+        run: |
+          python3 - <<'PY'
+          import csv, glob, os
+          source='/tmp/pinbundle/pinterest_bulk_10_pregnancy_pins.csv'
+          with open(source,encoding='utf-8-sig',newline='') as f:
+              rows=list(csv.DictReader(f))
+          titles=list(sorted(glob.glob('images/pregnancy-quiz/*.png')))
+          assert len(rows)==10 and len(titles)==10,(len(rows),len(titles))
+          for row,path in zip(rows,titles):
+              row['Media URL']='https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/'+path
+              assert row['Link']=='https://apps.apple.com/us/app/am-i-pregnant-pregnancy-quiz/id6769078846'
+          with open('pinterest_bulk_ready.csv','w',newline='',encoding='utf-8-sig') as f:
+              writer=csv.DictWriter(f,fieldnames=list(rows[0]))
+              writer.writeheader()
+              writer.writerows(rows)
+          print('Published',len(rows),'pin rows and images')
+          PY
+      - name: Commit published pins
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/pregnancy-quiz pinterest_bulk_ready.csv
+          git diff --cached --quiet || (git commit -m "Publish 10 pregnancy Pinterest pins and import CSV" && git push)
