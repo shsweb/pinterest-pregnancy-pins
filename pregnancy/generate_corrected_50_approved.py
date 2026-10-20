@@ -41,7 +41,7 @@ for i,url in enumerate(photo_urls):
 if not portrait:
   im=Image.open('pin-01.png').convert('RGB')
   portrait=[im.crop((0,580,450,1450))]
-  print('Fallback to original woman's photograph')
+  print("Fallback to original woman photograph")
 assert portrait
 
 W,H=1000,1500
