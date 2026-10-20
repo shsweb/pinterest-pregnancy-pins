@@ -1,0 +1,31 @@
+name: Generate 20 Top Pregnancy Pinterest Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pregnancy/generate_20_top_pins.py'
+      - '.github/workflows/generate-pregnancy-20-top.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image libraries
+        run: python -m pip install cairosvg pillow
+      - name: Generate images and bulk-upload CSV
+        run: python pregnancy/generate_20_top_pins.py
+      - name: Publish hosted PNG images and CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pregnancy/top-20-oct-2026/ pinterest_20_top_pins.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 20 new pregnancy SEO pin images and CSV"
+            git push
+          fi
