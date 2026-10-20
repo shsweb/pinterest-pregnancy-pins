@@ -1,0 +1,55 @@
+name: Publish glossy Santa images
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-glossy-santa-images.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download ten glossy Santa images
+        shell: bash
+        run: |
+          mkdir -p santa/campaign-glossy-10/images
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/onIYd3xY0JBSv1Ox' --output "santa/campaign-glossy-10/images/santa-glossy-01.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/6hvqNkUI928YRTTh' --output "santa/campaign-glossy-10/images/santa-glossy-02.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/n612CWMhIuxa54ef' --output "santa/campaign-glossy-10/images/santa-glossy-03.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/06Vle56AO6T2Ycec' --output "santa/campaign-glossy-10/images/santa-glossy-04.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/liNH1cAf4hB93H8L' --output "santa/campaign-glossy-10/images/santa-glossy-05.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/PCx1EmJr0WxKqOiK' --output "santa/campaign-glossy-10/images/santa-glossy-06.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/GdLFjq6h6SVZjNo1' --output "santa/campaign-glossy-10/images/santa-glossy-07.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/niq4P8HlILfZvi4i' --output "santa/campaign-glossy-10/images/santa-glossy-08.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/qkdmsQglLUcpXzjs' --output "santa/campaign-glossy-10/images/santa-glossy-09.jpg"
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 'https://at.adobe.com/gmL259ksZtVFuFRm' --output "santa/campaign-glossy-10/images/santa-glossy-10.jpg"
+      - name: Validate image files
+        shell: bash
+        run: |
+          python -m pip install pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          images=sorted(Path('santa/campaign-glossy-10/images').glob('santa-glossy-*.jpg'))
+          assert len(images)==10, f'Expected 10 files, found {len(images)}'
+          for f in images:
+            with Image.open(f) as im:
+              im.verify()
+            assert f.stat().st_size > 20000, f'Not a valid image: {f}'
+            print('Validated:', f, f.stat().st_size)
+          PY
+      - name: Commit to public GitHub image hosting
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/campaign-glossy-10/images/
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 10 glossy Santa Pinterest images"
+            git push
+          fi
