@@ -286,7 +286,7 @@ def world(x,y,s=1):
     close()
 
 SCENE = {
-"phone":phone,"cookie":lambda x,y,s: (santa(x-85,y,s*.88),cookie(x+195,y+90,s*.75)),
+"santa":santa, "phone":phone,"cookie":lambda x,y,s: (santa(x-85,y,s*.88),cookie(x+195,y+90,s*.75)),
 "jokes":lambda x,y,s:(santa(x-65,y,s*.93),speech(x+175,y-150,s*.65)),
 "reindeer":lambda x,y,s:(reindeer(x,y,s*.92),sparkle(x+195,y-160,31)),
 "elf":lambda x,y,s:(elf(x-65,y,s),present(x+155,y+140,s*.68)),
@@ -398,7 +398,7 @@ for i,pin in enumerate(PINS):
 thumb_w=210; thumb_h=315; gap=12
 sheet=Image.new("RGB",(gap+6*(thumb_w+gap),gap+5*(thumb_h+gap)),(245,241,233))
 for i in range(30):
-    with Image.open(OUT/f"santa-40-{i+1:02d}.png") as original:
+    with Image.open(OUT/f"santa-30-{i+1:02d}.png") as original:
         thumb=original.convert("RGB").resize((thumb_w,thumb_h),Image.Resampling.LANCZOS)
     x=gap+(i%6)*(thumb_w+gap);y=gap+(i//6)*(thumb_h+gap)
     sheet.paste(thumb,(x,y))
