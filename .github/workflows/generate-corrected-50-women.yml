@@ -1,0 +1,32 @@
+name: Generate Corrected 50 Women Pinterest Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pregnancy/generate_corrected_50_approved.py'
+      - 'pregnancy/corrected_50_approved_style_data.json'
+      - '.github/workflows/generate-corrected-50-women.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install requirements
+        run: python -m pip install pillow requests
+      - name: Generate 50 photo-focused pregnancy pins and CSVs
+        run: python pregnancy/generate_corrected_50_approved.py
+      - name: Publish verified assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pregnancy/corrected-50-approved pinterest_50_APPROVED_WOMEN_REPLACEMENT.csv pinterest_approved_batch1_25.csv pinterest_approved_batch2_25.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish corrected 50 photo-first Pinterest pins and CSV"
+            git push
+          fi
