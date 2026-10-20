@@ -1,0 +1,63 @@
+name: Publish 30 glossy Santa Pinterest Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-new-30-santa-pins.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download prepared images and CSV
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 3 --max-time 240 \
+            'https://at.adobe.com/svMPyat4z0bJSCfj' -o /tmp/santa-glossy-30.zip
+          file /tmp/santa-glossy-30.zip
+          unzip -t /tmp/santa-glossy-30.zip
+          mkdir -p santa/campaign-glossy-30
+          unzip -o /tmp/santa-glossy-30.zip -d santa/campaign-glossy-30
+      - name: Validate 30 hosted images and CSV
+        shell: bash
+        run: |
+          python -m pip install --quiet pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import csv
+          base=Path('santa/campaign-glossy-30')
+          images=sorted((base/'images').glob('santa-glossy-new-*.jpg'))
+          assert len(images)==30, f'Expected 30 images, got {len(images)}'
+          for f in images:
+              with Image.open(f) as img:
+                  img.verify()
+              with Image.open(f) as img:
+                  assert img.size == (1000,1500), (f,img.size)
+              assert f.stat().st_size > 10000, (f,f.stat().st_size)
+          with (base/'pinterest_santa_glossy_30_ready.csv').open(encoding='utf-8-sig', newline='') as inp:
+              rows=list(csv.DictReader(inp))
+          assert len(rows)==30, len(rows)
+          for i,row in enumerate(rows,1):
+              assert row['Media URL'].endswith(f'santa-glossy-new-{i:02}.jpg')
+              assert row['Link'].startswith('https://apps.apple.com/us/app/call-santa-talk-video/id6808839679')
+          print('Verified 30 JPG images, 30 CSV entries, and all destinations')
+          PY
+      - name: Commit images and upload-ready CSV
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/campaign-glossy-30/
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 30 glossy Santa Pin images and Pinterest CSV"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
