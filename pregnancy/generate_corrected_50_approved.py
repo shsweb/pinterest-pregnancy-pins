@@ -16,7 +16,6 @@ photo_urls=[
 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=900&q=84',
 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=900&q=84',
 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=900&q=84',
-'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=900&q=84',
 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=900&q=84',
 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=900&q=84',
 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=900&q=84',
@@ -86,8 +85,8 @@ for i,rec in enumerate(info):
   center(dr,sub,y+17,f,navy); head_end=y+85
   # photo with opaque layered mask over bottom, no tiny text in photo
   ph_top=max(380,head_end+20);ph_end=1290
-  selected=portrait[(i*7 + i//len(portrait))%len(portrait)]
-  face=cover(selected,930,ph_end-ph_top,anchor_x=[.25,.42,.6,.53][i%4],anchor_y=[.24,.13,.33][i%3])
+  selected=portrait[i%len(portrait)]
+  face=cover(selected,930,ph_end-ph_top,anchor_x=[.25,.42,.6,.53][i%4],anchor_y=.79)
   mask=Image.new('L',face.size);md=ImageDraw.Draw(mask)
   md.rounded_rectangle((0,0,face.width,face.height+90),radius=66,fill=255)
   img.paste(face,(35,ph_top),mask)
