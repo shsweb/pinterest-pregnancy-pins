@@ -1,0 +1,66 @@
+name: Publish 40 Call Santa glossy Pinterest Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-40-santa-cta.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  render-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --quiet pillow
+      - name: Download glossy source artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 4 --max-time 180 'https://at.adobe.com/NBHY1wXSH9ksZTQE' -o /tmp/santa-cta-src-1.png
+          curl --fail --location --silent --show-error --retry 4 --max-time 180 'https://at.adobe.com/p26Mu37uF3RMGmiV' -o /tmp/santa-cta-src-2.png
+          file /tmp/santa-cta-src-*.png
+      - name: Create forty separate Pinterest images and CSVs
+        run: python santa/call-to-action-40/generate.py
+      - name: Validate 40 separate image files and CSVs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import csv
+          from PIL import Image
+          root=Path('santa/call-to-action-40')
+          images=sorted(root.rglob('call-santa-b*.jpg'))
+          assert len(images)==40, len(images)
+          for f in images:
+              with Image.open(f) as image:
+                  image.verify()
+              with Image.open(f) as image:
+                  assert image.size==(1000,1500), f
+          for b in (1,2):
+              with (root/f'batch-{b:02}'/f'pinterest_santa_batch_{b:02}_20.csv').open(encoding='utf-8-sig',newline='') as f:
+                  rows=list(csv.DictReader(f))
+              assert len(rows)==20,len(rows)
+              for idx, row in enumerate(rows,1):
+                  assert row['Media URL'].endswith(f'call-santa-b{b:02}-{idx:02}.jpg')
+                  assert row['Link'].startswith('https://apps.apple.com/us/app/call-santa-talk-video/id6808839679')
+          with (root/'pinterest_santa_40_ALL.csv').open(encoding='utf-8-sig',newline='') as f:
+              assert len(list(csv.DictReader(f))) == 40
+          print('Verified all 40 images and 3 CSVs')
+          PY
+      - name: Commit published image files and CSVs
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/call-to-action-40/
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 40 glossy Call Santa Pins with hosted images and Pinterest CSVs"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
