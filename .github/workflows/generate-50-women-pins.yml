@@ -1,0 +1,31 @@
+name: Generate 50 Women-Focused Pregnancy Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pregnancy/generate_50_women_pins.py'
+      - '.github/workflows/generate-50-women-pins.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install illustration libraries
+        run: python -m pip install cairosvg pillow
+      - name: Render 50 women-focused pin designs and three CSVs
+        run: python pregnancy/generate_50_women_pins.py
+      - name: Publish images and Pinterest CSV files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pregnancy/women-25-a/ pregnancy/women-25-b/ pinterest_50_women_pins_ALL.csv pinterest_women_batch_1_25.csv pinterest_women_batch_2_25.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "Host 50 women-focused Pinterest pin images and CSV files"
+            git push
+          fi
