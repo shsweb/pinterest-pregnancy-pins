@@ -1,0 +1,60 @@
+name: Publish Individual HD Santa Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-individual-hd-santa-10.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - run: python -m pip install pillow
+      - name: Download original ten high quality Pinterest images
+        shell: bash
+        run: |
+          set -e
+          mkdir -p santa/campaign-individual-hd-10/images
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/sUfdxCBIzWeaarzu' -o santa/campaign-individual-hd-10/images/santa-hd-01.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/LxdTCasmLa8x3x9p' -o santa/campaign-individual-hd-10/images/santa-hd-02.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/IEuBVJhOGVFHmIO4' -o santa/campaign-individual-hd-10/images/santa-hd-03.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/nTcJKnN9RDj9daQz' -o santa/campaign-individual-hd-10/images/santa-hd-04.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/PnhSobEAwEUQSlq5' -o santa/campaign-individual-hd-10/images/santa-hd-05.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/wbDGnmjP7FMuJdk4' -o santa/campaign-individual-hd-10/images/santa-hd-06.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/a3xM6gEGTyG1tfJq' -o santa/campaign-individual-hd-10/images/santa-hd-07.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/FmgSW8ll5jDjdwTR' -o santa/campaign-individual-hd-10/images/santa-hd-08.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/gjR5NbZTBJwcOOJr' -o santa/campaign-individual-hd-10/images/santa-hd-09.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 'https://at.adobe.com/fp5jcL0afsl1n4z1' -o santa/campaign-individual-hd-10/images/santa-hd-10.png
+      - name: Render quality JPEGs and validate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          root=Path('santa/campaign-individual-hd-10/images')
+          for n in range(1,11):
+            src=root/f'santa-hd-{n:02}.png'
+            with Image.open(src) as im:
+              assert im.size[0]>=1000 and im.size[1]>=1500, (src,im.size)
+              rgb=im.convert('RGB')
+              rgb.save(root/f'santa-hd-{n:02}.jpg',quality=95,subsampling=0,optimize=True)
+            src.unlink()
+            assert (root/f'santa-hd-{n:02}.jpg').stat().st_size > 120000
+            print('OK',n)
+          PY
+      - name: Commit final images
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/campaign-individual-hd-10/images/
+          if ! git diff --cached --quiet; then
+            git commit -m "Add 10 full quality Santa Pins for Pinterest"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
