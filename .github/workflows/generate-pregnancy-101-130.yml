@@ -1,0 +1,31 @@
+name: Generate Pregnancy Pins 101-130
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pregnancy/generate_30_pins_101_130.py'
+      - '.github/workflows/generate-pregnancy-101-130.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image libraries
+        run: python -m pip install cairosvg pillow
+      - name: Generate 30 pin images and bulk upload CSV
+        run: python pregnancy/generate_30_pins_101_130.py
+      - name: Commit PNG images and CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pregnancy/next-30-oct-2026/ pinterest_30_new_pins_101_130.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish pregnancy pins 101-130 and CSV"
+            git push
+          fi
