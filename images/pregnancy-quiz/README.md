@@ -1,0 +1,1 @@
+Upload the 10 PNG files from the pregnancy_pinterest_pins folder here. The GitHub Actions workflow automatically produces pinterest_bulk_ready.csv with public image URLs and the App Store destination for all 10 pins.
