@@ -1,0 +1,31 @@
+name: Generate AskTripPilot Travel Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'travel-pins/generate_pins.py'
+      - '.github/workflows/generate-asktrippilot-pins.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image dependencies
+        run: python -m pip install --disable-pip-version-check pillow requests beautifulsoup4
+      - name: Generate 20 Pinterest images and CSV
+        run: python travel-pins/generate_pins.py
+      - name: Commit generated images and CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add travel-pins/images travel-pins/pinterest_travel_pins_20.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "Add 20 AskTripPilot travel pin images and bulk CSV [skip ci]"
+            git push
+          fi
