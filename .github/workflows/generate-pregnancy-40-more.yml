@@ -1,0 +1,31 @@
+name: Generate 40 More Pregnancy Pinterest Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pregnancy/generate_40_more_pins.py'
+      - '.github/workflows/generate-pregnancy-40-more.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image libraries
+        run: python -m pip install cairosvg pillow
+      - name: Generate 40 pin images and CSV
+        run: python pregnancy/generate_40_more_pins.py
+      - name: Commit image assets and CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pregnancy/new-40/ pinterest_40_more_pins.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 40 more pregnancy pins and CSV"
+            git push
+          fi
