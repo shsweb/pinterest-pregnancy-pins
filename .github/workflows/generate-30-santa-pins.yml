@@ -27,3 +27,5 @@ jobs:
             git commit -m "Publish 30 Santa Pinterest designs"
             git push
           fi
+
+# Rebuild after fixing 30-pin rendering script
