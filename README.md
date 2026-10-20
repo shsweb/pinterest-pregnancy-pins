@@ -1,14 +1,14 @@
-# Pinterest pregnancy pins
+# Pinterest Pins for Am I Pregnant? Pregnancy Quiz
 
-Images and bulk-upload CSV for **Am I Pregnant? Pregnancy Quiz**.
+A dedicated public image-hosting repository for 10 Pinterest pins.
 
-## Finish image hosting
+## Usage
 
-1. Download the 10-image ZIP attached in the ChatGPT conversation and extract it.
-2. In this repository, select **Add file → Upload files** and drag **pin-01.png** through **pin-10.png** to the root of the main branch. Commit.
-3. Verify https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/pin-01.png displays the image.
-4. Download the CSV in this repository and upload it through Pinterest's bulk create/import tool.
+1. Create this GitHub repository as **Public**, named `pinterest-pregnancy-pins`, owned by `shsweb`, with a README.
+2. Upload all ten `pin-01.png` ... `pin-10.png` images to the root of the default `main` branch (GitHub website: Add file → Upload files).
+3. Check this link is accessible publicly: https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/pin-01.png
+4. After the image URLs resolve, upload `pinterest_bulk_upload_after_github.csv` to Pinterest bulk upload.
 
-The CSV already contains all ten eventual GitHub image links, SEO titles/descriptions, and the same App Store destination: https://apps.apple.com/us/app/am-i-pregnant-pregnancy-quiz/id6769078846
+All pins use this destination link: https://apps.apple.com/us/app/am-i-pregnant-pregnancy-quiz/id6769078846
 
-The image URLs won't work until the ten PNGs have been uploaded.
+**Important:** Image links will return 404 until this public repository exists and the image files are uploaded to its root. The CSV has prefilled *future* image URLs, not currently live URLs.
