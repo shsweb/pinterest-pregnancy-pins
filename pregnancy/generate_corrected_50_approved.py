@@ -86,7 +86,7 @@ for i,rec in enumerate(info):
   # photo with opaque layered mask over bottom, no tiny text in photo
   ph_top=max(380,head_end+20);ph_end=1290
   selected=portrait[i%len(portrait)]
-  face=cover(selected,930,ph_end-ph_top,anchor_x=[.25,.42,.6,.53][i%4],anchor_y=.79)
+  face=cover(selected,930,ph_end-ph_top,anchor_x=[.25,.42,.6,.53][i%4],anchor_y=.50)
   mask=Image.new('L',face.size);md=ImageDraw.Draw(mask)
   md.rounded_rectangle((0,0,face.width,face.height+90),radius=66,fill=255)
   img.paste(face,(35,ph_top),mask)
