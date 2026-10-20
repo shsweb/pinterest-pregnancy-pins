@@ -1,0 +1,55 @@
+name: Publish 10 Full Resolution Santa Pins
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-santa-fullres-10.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download original full resolution generated artwork
+        run: |
+          mkdir -p santa/fullres-10/images
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/Wdct2Mxfrvo44EDb' -o santa/fullres-10/images/call-santa-fullres-01.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/aEFB19ZZSGbyfnXw' -o santa/fullres-10/images/call-santa-fullres-02.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/MqfBypxl8zBffXzQ' -o santa/fullres-10/images/call-santa-fullres-03.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/HOiqjPGK1n5y86BW' -o santa/fullres-10/images/call-santa-fullres-04.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/bXZir93SAuQPXGEq' -o santa/fullres-10/images/call-santa-fullres-05.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/tniSYTun2QyYhg7l' -o santa/fullres-10/images/call-santa-fullres-06.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/mTvMvSmtJ4zabhwN' -o santa/fullres-10/images/call-santa-fullres-07.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/SPzxihVn1MhTk7dI' -o santa/fullres-10/images/call-santa-fullres-08.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/mgv113vILjPkXmnh' -o santa/fullres-10/images/call-santa-fullres-09.png
+          curl -fLsS --retry 3 --max-time 120 'https://at.adobe.com/N0lEMeh5h6eihy6R' -o santa/fullres-10/images/call-santa-fullres-10.png
+      - name: Convert to optimized 1000 by 1500 JPEG pins
+        run: |
+          pip install -q pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageOps
+          p=Path('santa/fullres-10/images')
+          images=sorted(p.glob('call-santa-fullres-*.png'))
+          assert len(images)==10, f'Only {len(images)} images downloaded'
+          for file in images:
+              with Image.open(file) as im:
+                  im.load()
+                  assert im.width >=1000 and im.height >=1500, (file, im.size)
+                  target=ImageOps.fit(im.convert('RGB'), (1000,1500), Image.Resampling.LANCZOS, centering=(.5,.5))
+                  dest=file.with_suffix('.jpg')
+                  target.save(dest,'JPEG',quality=95,subsampling=0,optimize=True)
+                  assert dest.stat().st_size>100000
+              file.unlink()
+          print('Published 10 crisp original-resolution 1000x1500 images')
+          PY
+      - name: Push all images to GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/fullres-10/images/
+          git diff --cached --quiet || (git commit -m 'Publish 10 full resolution Santa Pinterest images' && git pull --rebase origin main && git push origin HEAD:main)
