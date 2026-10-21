@@ -1,0 +1,35 @@
+name: Fix face framing in approved women Pinterest pins
+on:
+  push:
+    paths:
+      - '.github/workflows/reframe_batch5_faces.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  reframe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install pillow
+      - name: Shift crop to keep faces below headline
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/generate_women_batch5_approved.py')
+          s=p.read_text()
+          old='int(oh*.215),int(ow*.935),int(oh*.875)'
+          new='int(oh*.045),int(ow*.935),int(oh*.805)'
+          assert old in s
+          p.write_text(s.replace(old,new))
+          PY
+      - name: Rebuild correctly framed photos and CSV
+        run: python3 scripts/generate_women_batch5_approved.py
+      - name: Apply final readable English typography
+        run: python3 scripts/repair_batch5_headlines.py
+      - name: Publish crop corrections
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/generate_women_batch5_approved.py images/pregnancy-women-batch5-approved PINTEREST_20_APPROVED_STYLE_REPLACEMENT.csv
+          git diff --cached --quiet || (git commit -m 'Keep entire women faces in approved style Pinterest pins' && git push)
