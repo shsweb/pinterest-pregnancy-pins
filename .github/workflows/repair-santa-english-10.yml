@@ -1,0 +1,38 @@
+name: Repair English Text on Ten Santa Pins
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/repair-santa-english-10.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image typography renderer
+        run: python -m pip install --quiet pillow
+      - name: Cover the generated nonsense with correctly spelled English
+        run: python santa/child-actions-10/fix_pin_text.py
+      - name: Publish corrected 1000x1500 PNG designs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/child-actions-10/corrected/
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish ten Santa Pins with corrected English titles and CTA"
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep 2
+            done
+            echo "Upload failed after retries" >&2
+            exit 1
+          fi
