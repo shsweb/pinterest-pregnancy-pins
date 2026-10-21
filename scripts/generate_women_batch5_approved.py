@@ -25,7 +25,7 @@ def draw_pin(index,title,subtitle,caption):
     result=TEMPLATE.copy()
     photo=Image.open(f"images/pregnancy-replacements-source/photo_{index:02d}.jpg").convert("RGB")
     ow,oh=photo.size
-    crop=photo.crop((int(ow*.065),int(oh*.215),int(ow*.935),int(oh*.875)))
+    crop=photo.crop((int(ow*.065),int(oh*.045),int(ow*.935),int(oh*.805)))
     ratio=max(W/crop.width,790/crop.height)
     crop=crop.resize((math.ceil(crop.width*ratio),math.ceil(crop.height*ratio)),Image.Resampling.LANCZOS)
     ww,hh=crop.size
