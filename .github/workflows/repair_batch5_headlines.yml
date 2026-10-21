@@ -1,0 +1,22 @@
+name: Proofread and fix approved Pinterest pin subtitles
+on:
+  push:
+    paths:
+      - 'scripts/repair_batch5_headlines.py'
+      - '.github/workflows/repair_batch5_headlines.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  proofread:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install pillow
+      - run: python3 scripts/repair_batch5_headlines.py
+      - name: Commit perfected headings
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add images/pregnancy-women-batch5-approved
+          git diff --cached --quiet || (git commit -m 'Fix subtitle safe areas across 20 pins' && git push)
