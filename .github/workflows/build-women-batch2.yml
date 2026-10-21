@@ -1,0 +1,23 @@
+name: Publish women-style pregnancy pins batch 2
+on:
+  push:
+    paths:
+      - 'scripts/build_women_batch2.py'
+      - 'images/pregnancy-women-batch2-source/**'
+      - '.github/workflows/build-women-batch2.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install pillow
+      - run: python3 scripts/build_women_batch2.py
+      - name: Publish Pinterest images and CSV
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add images/pregnancy-women-batch2/ pinterest_10_women_batch2_FIXED.csv
+          git diff --cached --quiet || (git commit -m 'Publish 10 woman-style Pinterest pins batch 2 with CSV' && git push)
