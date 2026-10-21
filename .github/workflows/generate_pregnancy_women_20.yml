@@ -1,0 +1,24 @@
+name: Publish 20 pregnancy women pins
+on:
+  push:
+    paths:
+      - 'scripts/generate_pregnancy_women_20.py'
+      - '.github/workflows/generate_pregnancy_women_20.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow
+        run: python3 -m pip install pillow
+      - name: Generate approved women-style pins and CSV
+        run: python3 scripts/generate_pregnancy_women_20.py
+      - name: Commit images and ready CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/pregnancy-women-batch4 pinterest_women_20_READY.csv
+          git diff --cached --quiet || (git commit -m "Publish 20 new pregnancy Pinterest pins with hosted URLs" && git push)
