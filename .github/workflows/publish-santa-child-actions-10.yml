@@ -1,0 +1,60 @@
+name: Publish 10 Diverse Child Action Santa Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-santa-child-actions-10.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download 10 separately generated Pinterest designs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p santa/child-actions-10/images
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:b40bac6a-b39c-4052-8f64-7e7d05c93381' -o 'santa/child-actions-10/images/child-action-01.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:b802144d-3a32-4a1e-8ca0-07433710c315' -o 'santa/child-actions-10/images/child-action-02.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:90858d46-dfad-4057-a670-91e9e274e073' -o 'santa/child-actions-10/images/child-action-03.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:8b4f1cf6-415d-4aba-a314-e855d21cbb71' -o 'santa/child-actions-10/images/child-action-04.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:b231b4c1-8c58-4f5d-9836-90e5a2361ec7' -o 'santa/child-actions-10/images/child-action-05.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:419fec5d-79f7-4621-96b5-73b26951b7eb' -o 'santa/child-actions-10/images/child-action-06.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:10a33d87-d0c1-4c36-84de-f0a8be84bac9' -o 'santa/child-actions-10/images/child-action-07.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:0c57196f-886e-4d75-a722-603436c066e4' -o 'santa/child-actions-10/images/child-action-08.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:1bdd4613-f49c-4746-acee-36d4d296be35' -o 'santa/child-actions-10/images/child-action-09.png'
+          curl -fLsS --retry 3 --retry-delay 3 --max-time 150 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:e3511d20-13f1-46e1-a4ca-ccd6d5440464' -o 'santa/child-actions-10/images/child-action-10.png'
+      - name: Check high resolution and image integrity
+        shell: bash
+        run: |
+          python -m pip install --quiet pillow
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          folder=Path('santa/child-actions-10/images')
+          images=sorted(folder.glob('child-action-*.png'))
+          assert len(images)==10, f'Expected 10 individual images, found {len(images)}'
+          for image in images:
+              with Image.open(image) as im:
+                  assert im.size == (1000,1500), f'{image}: {im.size}'
+                  im.verify()
+              assert image.stat().st_size > 100_000, f'Image too small: {image}'
+              print(image.name, image.stat().st_size)
+          PY
+      - name: Publish PNGs to GitHub
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/child-actions-10/images/
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 10 individually designed Santa Pins with unique child actions"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
