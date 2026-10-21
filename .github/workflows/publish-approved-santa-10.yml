@@ -1,0 +1,63 @@
+name: Publish Approved Santa Style Ten Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-approved-santa-10.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download the 10 exact approved posters
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p santa/approved-style-10/images
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/TNuGkoJMEhqHolOV' -o 'santa/approved-style-10/images/santa-approved-01.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/5tVeXlHpHLbFFqLO' -o 'santa/approved-style-10/images/santa-approved-02.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/n5gQu0QttiBMBYFN' -o 'santa/approved-style-10/images/santa-approved-03.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/md7HGVxxFdKGLs42' -o 'santa/approved-style-10/images/santa-approved-04.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/z8Y1n7JBHbQKlGZr' -o 'santa/approved-style-10/images/santa-approved-05.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/mWUsza4TEodqz3wV' -o 'santa/approved-style-10/images/santa-approved-06.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/7Qh3faOQlSlkz73U' -o 'santa/approved-style-10/images/santa-approved-07.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/wVLF87bbmiOugdwy' -o 'santa/approved-style-10/images/santa-approved-08.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/RlZFFocnfPjXZ40W' -o 'santa/approved-style-10/images/santa-approved-09.png'
+          curl -fLsS --retry 3 --retry-delay 2 --max-time 120 'https://at.adobe.com/EYslnVlVWFcKNBJD' -o 'santa/approved-style-10/images/santa-approved-10.png'
+      - name: Check 10 true full-resolution vertical images
+        run: |
+          python -m pip install --quiet Pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          files=sorted(Path('santa/approved-style-10/images').glob('santa-approved-*.png'))
+          assert len(files)==10, len(files)
+          for f in files:
+              with Image.open(f) as im:
+                  assert im.size==(1024,1536),(f,im.size)
+                  im.verify()
+              assert f.stat().st_size>100000, f
+              print('PASS',f.name)
+          PY
+      - name: Publish actual images to GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add santa/approved-style-10/images/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish ten exact approved glossy Santa posters'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
