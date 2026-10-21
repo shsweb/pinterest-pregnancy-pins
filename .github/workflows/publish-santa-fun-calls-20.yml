@@ -1,0 +1,64 @@
+name: Publish Twenty Santa Fun Calls Pinterest Pins
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-santa-fun-calls-20.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download original individual artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p santa/santa-fun-calls-20/sources
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:c0727838-17b3-4fbf-9efe-8d11d5e485ac' -o 'santa/santa-fun-calls-20/sources/source-01.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:34fc01c4-97de-4c56-97bf-f3986e1e3057' -o 'santa/santa-fun-calls-20/sources/source-02.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:bda5e017-8f0d-4067-8674-8de7286a20e0' -o 'santa/santa-fun-calls-20/sources/source-03.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:b84fd64c-d8b4-4b6e-8748-22c9905a608d' -o 'santa/santa-fun-calls-20/sources/source-04.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:00aa04ab-6741-4b64-b35b-0570b88551ba' -o 'santa/santa-fun-calls-20/sources/source-05.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:171d6ffa-1535-47ed-bb26-f39d6d6a4fab' -o 'santa/santa-fun-calls-20/sources/source-06.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:e6adf5fd-e96f-47e7-bc86-e9eb13a496cb' -o 'santa/santa-fun-calls-20/sources/source-07.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:dff31323-2477-4bb9-88cf-baf9c3f77bc9' -o 'santa/santa-fun-calls-20/sources/source-08.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:e4f1f3b3-172f-41d8-9d79-c31ca8b4cf89' -o 'santa/santa-fun-calls-20/sources/source-09.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:b6ad7f30-02af-4640-a0fc-392a2553c3ba' -o 'santa/santa-fun-calls-20/sources/source-10.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:a054321b-c694-4653-80ff-5ce79c30fea3' -o 'santa/santa-fun-calls-20/sources/source-11.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:cd8a3e59-df17-4940-8fc2-5edfc6b56ff4' -o 'santa/santa-fun-calls-20/sources/source-12.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:eb0e700a-8db3-4443-8d61-b4462be4fb6c' -o 'santa/santa-fun-calls-20/sources/source-13.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:9f92b912-33f7-4d49-b36f-f981ff40ff1d' -o 'santa/santa-fun-calls-20/sources/source-14.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:51eabd8c-61e0-4f49-856b-99df950a7c23' -o 'santa/santa-fun-calls-20/sources/source-15.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:4a24159f-ff7c-4a9b-8035-cf9f1aabf69a' -o 'santa/santa-fun-calls-20/sources/source-16.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:8389870b-3cd1-4ba7-943d-b265c171dbd9' -o 'santa/santa-fun-calls-20/sources/source-17.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:8706338c-95d9-4d25-9a85-128cd487eae4' -o 'santa/santa-fun-calls-20/sources/source-18.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:e74b844d-e236-4b7c-9e13-0e6046c61210' -o 'santa/santa-fun-calls-20/sources/source-19.png'
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 --max-time 180 'https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:c712a41f-ed6b-4427-a272-18a0eda17242' -o 'santa/santa-fun-calls-20/sources/source-20.png'
+      - name: Render 20 crisp original Santa scenes with verified English
+        run: |
+          python -m pip install --quiet pillow
+          python santa/santa-fun-calls-20/render_pins.py
+      - name: Commit and publish 20 images
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add santa/santa-fun-calls-20/images/ santa/santa-fun-calls-20/preview_20.jpg
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish twenty distinct 1000x1500 Santa video-call pins"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
