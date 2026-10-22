@@ -1,0 +1,7 @@
+('github', 'images/pregnancy-women-batch4/31_women_pin.jpg', 206, 'image/jpeg', 1024)
+('cdn', 'images/pregnancy-women-batch4/31_women_pin.jpg', 206, 'image/jpeg', 1024)
+('github', 'images/pregnancy-women-batch5/51_pregnancy_pin.jpg', 206, 'image/jpeg', 1024)
+('cdn', 'images/pregnancy-women-batch5/51_pregnancy_pin.jpg', 206, 'image/jpeg', 1024)
+('github', 'images/pregnancy-women-batch5-approved/pin_51.jpg', 206, 'image/jpeg', 1024)
+('cdn', 'images/pregnancy-women-batch5-approved/pin_51.jpg', 206, 'image/jpeg', 1024)
+Selected host: https://cdn.jsdelivr.net/gh/shsweb/pinterest-pregnancy-pins@main/
