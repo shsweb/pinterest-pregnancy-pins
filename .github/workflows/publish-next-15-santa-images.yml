@@ -1,0 +1,68 @@
+name: Publish Next 15 Santa Pinterest Images
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-next-15-santa-images.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  upload-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download fifteen approved images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p santa/approved-style-next-15/images
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/fLT9iW85s9ElRlsr' -o 'santa/approved-style-next-15/images/santa-next-01.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/xjuQWD8MGGf2uLaq' -o 'santa/approved-style-next-15/images/santa-next-02.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/1Wvj73NeHUCGnzuW' -o 'santa/approved-style-next-15/images/santa-next-03.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/yAdtHab4HPZxld5P' -o 'santa/approved-style-next-15/images/santa-next-04.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/Wzw907iu5MriBLWq' -o 'santa/approved-style-next-15/images/santa-next-05.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/um9FKutG73wfMBiM' -o 'santa/approved-style-next-15/images/santa-next-06.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/y6LDtUIGhENWwIyL' -o 'santa/approved-style-next-15/images/santa-next-07.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/3LN18cEDXexM945I' -o 'santa/approved-style-next-15/images/santa-next-08.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/sBPRoKglq3aenEkZ' -o 'santa/approved-style-next-15/images/santa-next-09.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/mLoSGCOVN5qJsDbx' -o 'santa/approved-style-next-15/images/santa-next-10.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/SbDM2vyh5nLxtGN6' -o 'santa/approved-style-next-15/images/santa-next-11.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/g5vG44BVMLWAyAjH' -o 'santa/approved-style-next-15/images/santa-next-12.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/jcWaLSmXG7FTDArh' -o 'santa/approved-style-next-15/images/santa-next-13.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/RCxyfKbYPjDkPltx' -o 'santa/approved-style-next-15/images/santa-next-14.png'
+          curl -fLsS --retry 4 --retry-delay 2 --max-time 180 'https://at.adobe.com/3S60OEB0qt9OcXQu' -o 'santa/approved-style-next-15/images/santa-next-15.png'
+      - name: Verify all files are full-resolution PNG images
+        shell: bash
+        run: |
+          python -m pip install --quiet Pillow
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          images=sorted(Path('santa/approved-style-next-15/images').glob('santa-next-*.png'))
+          assert len(images)==15, f'Expected 15 images; found {len(images)}'
+          for image in images:
+              with Image.open(image) as im:
+                  assert im.size==(1024,1536), f'{image}: {im.size}'
+                  im.verify()
+              assert image.stat().st_size>100000, f'Image too small: {image}'
+              print('VERIFIED', image.name)
+          PY
+      - name: Publish all fifteen images
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add santa/approved-style-next-15/images/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Upload 15 exact Santa Pinterest poster images'
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
