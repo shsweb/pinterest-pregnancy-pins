@@ -1,0 +1,25 @@
+name: Publish 20 new click-worthy pregnancy pins
+on:
+  push:
+    paths:
+      - 'scripts/build_pregnancy_women_clicks_20.py'
+      - 'images/pregnancy-women-batch5-photos/**'
+      - '.github/workflows/publish_pregnancy_women_clicks_20.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow
+        run: python3 -m pip install pillow
+      - name: Render and verify 20 Pinterest pins and final CSV
+        run: python3 scripts/build_pregnancy_women_clicks_20.py
+      - name: Publish images and CSV
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add images/pregnancy-women-batch5-clickworthy PINTEREST_20_NEW_WOMEN_CLICK_STYLE_READY.csv
+          git diff --cached --quiet || (git commit -m 'Publish 20 click-worthy pregnancy pins and ready CSV' && git push)
