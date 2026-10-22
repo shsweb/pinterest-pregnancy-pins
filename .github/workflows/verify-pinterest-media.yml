@@ -1,0 +1,72 @@
+name: Verify Pinterest Media URLs and fix CSV
+on:
+  push:
+    paths:
+      - '.github/workflows/verify-pinterest-media.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  verify-and-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate hosted pin images and write corrected CSVs
+        run: |
+          python3 - <<'PY'
+          import csv, os, pathlib, urllib.request, urllib.error, time
+          root = "https://raw.githubusercontent.com/shsweb/pinterest-pregnancy-pins/main/"
+          cdn  = "https://cdn.jsdelivr.net/gh/shsweb/pinterest-pregnancy-pins@main/"
+          samples = ["images/pregnancy-women-batch4/31_women_pin.jpg", "images/pregnancy-women-batch5/51_pregnancy_pin.jpg", "images/pregnancy-women-batch5-approved/pin_51.jpg"]
+          def check(url,method="GET"):
+              req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 (compatible; Pinterestbot/1.0; +https://www.pinterest.com/bot.html)","Range":"bytes=0-1023"},method=method)
+              try:
+                  with urllib.request.urlopen(req,timeout=22) as r:
+                      body=r.read(1024)
+                      return r.status,r.headers.get("Content-Type",""),len(body)
+              except Exception as e:
+                  return -1,str(e),0
+          report=[]
+          for path in samples:
+              for host,base in [("github",root),("cdn",cdn)]:
+                  status,ctype,sz=check(base+path)
+                  report.append((host,path,status,ctype,sz))
+                  print(host,path,status,ctype,sz)
+          root_ok=all(s in (200,206) and "image/" in ct for host,p,s,ct,b in report if host=="github")
+          cdn_ok=all(s in (200,206) and "image/" in ct for host,p,s,ct,b in report if host=="cdn")
+          if cdn_ok: selected=cdn
+          elif root_ok: selected=root
+          else:
+              raise RuntimeError("Neither public image service responded with image files; CSV fix aborted")
+          print("Selected image host:",selected)
+          inputs=[
+              ("pinterest_women_20_READY.csv","PINTEREST_20_WOMEN_IMPORT_FIXED.csv"),
+              ("pinterest_20_women_batch5_READY.csv","PINTEREST_20_NEWEST_IMPORT_FIXED.csv"),
+              ("PINTEREST_20_APPROVED_STYLE_REPLACEMENT.csv","PINTEREST_20_APPROVED_IMPORT_FIXED.csv")
+          ]
+          for src,dst in inputs:
+              if not pathlib.Path(src).exists(): continue
+              with open(src,encoding="utf-8-sig",newline="") as f:
+                  r=csv.DictReader(f);rows=list(r);fields=r.fieldnames
+              assert len(rows)==20,(src,len(rows))
+              assert "Media URL" in fields and "Link" in fields
+              for row in rows:
+                  url=row["Media URL"]
+                  if not url.startswith(root): raise ValueError("Unexpected old image URL "+url)
+                  path=url[len(root):]
+                  file=pathlib.Path(path)
+                  if not file.is_file(): raise ValueError("Missing image: "+path)
+                  row["Media URL"]=selected+path
+              assert len({r["Media URL"] for r in rows})==20
+              assert len({r["Link"] for r in rows})==20
+              with open(dst,"w",encoding="utf-8-sig",newline="") as f:
+                  writer=csv.DictWriter(f,fieldnames=fields);writer.writeheader();writer.writerows(rows)
+              print("Verified and created",dst,"rows",len(rows))
+          pathlib.Path("PINTEREST_IMAGE_URL_DIAGNOSTICS.txt").write_text("\n".join(str(x) for x in report)+"\nSelected host: "+selected+"\n")
+          PY
+      - name: Save corrected files
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PINTEREST_*_IMPORT_FIXED.csv PINTEREST_IMAGE_URL_DIAGNOSTICS.txt
+          git diff --cached --quiet || (git commit -m "Check Pinterest media access and publish import-repair CSV files" && git push)
