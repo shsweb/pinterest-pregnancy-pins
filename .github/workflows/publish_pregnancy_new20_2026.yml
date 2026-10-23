@@ -1,0 +1,24 @@
+name: Publish new 20 pregnancy pins October 2026
+on:
+  push:
+    paths:
+      - 'scripts/generate_pregnancy_new20_2026.py'
+      - '.github/workflows/publish_pregnancy_new20_2026.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install image tools
+        run: python3 -m pip install pillow
+      - name: Build full-resolution Pinterest images and ready CSV
+        run: python3 scripts/generate_pregnancy_new20_2026.py
+      - name: Publish everything
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add images/pregnancy-new20-2026/pins PINTEREST_NEW_20_PINS_READY.csv
+          git diff --cached --quiet || (git commit -m 'Publish 20 pregnancy women pins and Pinterest CSV' && git push)
