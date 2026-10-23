@@ -1,0 +1,33 @@
+name: Publish TripPilot Pins 51-60
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'travel-pins/batch-05/generate.py'
+      - '.github/workflows/publish-trippilot-51-60.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install rendering support
+        run: python -m pip install pillow
+      - name: Render all Pinterest cards
+        run: python travel-pins/batch-05/generate.py
+      - name: Commit image assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add travel-pins/batch-05/*.jpg
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish Pinterest travel images 51-60 [skip ci]'
+            git push
+          fi
