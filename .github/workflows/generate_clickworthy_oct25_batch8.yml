@@ -1,0 +1,24 @@
+name: Publish 20 clickable pregnancy pins October 25
+on:
+  push:
+    paths:
+      - 'scripts/generate_clickworthy_oct25_batch8.py'
+      - '.github/workflows/generate_clickworthy_oct25_batch8.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install image library
+        run: python3 -m pip install pillow
+      - name: Render 20 Pinterest pins and import CSV
+        run: python3 scripts/generate_clickworthy_oct25_batch8.py
+      - name: Commit published images and CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/pregnancy-women-clickworthy-oct25 PINTEREST_NEW_20_CLICKWORTHY_READY.csv
+          git diff --cached --quiet || (git commit -m "Publish 20 October 25 pregnancy Pinterest pins and CSV" && git push)
