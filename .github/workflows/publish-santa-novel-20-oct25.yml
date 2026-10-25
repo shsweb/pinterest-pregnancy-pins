@@ -1,0 +1,51 @@
+name: Publish Santa Novel 20 October 25
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-santa-novel-20-oct25.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download twenty original scenes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p santa/novel-20-oct25/sources
+          python - <<'PY'
+          import json, pathlib, subprocess
+          p=pathlib.Path('santa/novel-20-oct25')
+          m=json.loads((p/'manifest.json').read_text())
+          for i,x in enumerate(m,1):
+              out=p/'sources'/f'{i:02}.png'
+              subprocess.run(['curl','-fLsS','--retry','4','--max-time','180',f"https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:{x['id']}",'-o',str(out)],check=True)
+          PY
+      - name: Render and validate individual Pinterest designs
+        shell: bash
+        run: |
+          python -m pip install -q pillow
+          python santa/novel-20-oct25/build.py
+      - name: Publish all 20 Pin files and CSV
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add santa/novel-20-oct25/images/ santa/novel-20-oct25/pinterest_santa_novel_20_READY.csv santa/novel-20-oct25/preview_20.jpg
+          git diff --cached --quiet && exit 0
+          git commit -m 'Publish new 20 Santa Pins and upload-ready CSV'
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
