@@ -1,0 +1,24 @@
+name: Publish Pregnancy Women Batch 5
+on:
+  push:
+    paths:
+      - 'scripts/build_pregnancy_women_batch5.py'
+      - '.github/workflows/pregnancy-women-batch5.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install image rendering tools
+        run: python3 -m pip install pillow
+      - name: Render 20 portrait pins with English typography
+        run: python3 scripts/build_pregnancy_women_batch5.py
+      - name: Publish 20 hosted images and import CSV
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/pregnancy-women-batch5-final PINTEREST_20_PREGNANCY_WOMEN_BATCH5_READY.csv
+          git diff --cached --quiet || (git commit -m "Publish 20 new pregnancy pin photos and ready CSV" && git push)
