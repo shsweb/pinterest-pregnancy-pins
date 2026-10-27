@@ -1,0 +1,24 @@
+name: Publish 20 new pregnancy women pins - batch 8
+on:
+  push:
+    paths:
+      - 'scripts/build_pregnancy_batch8.py'
+      - '.github/workflows/build_pregnancy_batch8.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install fonts and rendering library
+        run: python3 -m pip install pillow
+      - name: Generate 20 vertical Pinterest images and CSV
+        run: python3 scripts/build_pregnancy_batch8.py
+      - name: Commit ready-to-upload CSV and images
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add images/pregnancy-women-batch8/ PINTEREST_20_NEW_WOMEN_BATCH8_READY.csv
+          git diff --cached --quiet || (git commit -m 'Publish twenty new photo pregnancy Pinterest pins with CSV' && git push)
